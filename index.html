@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para Ti</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Pantalla de inicio */
+        #welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 1.5s ease, visibility 1.5s;
+        }
+
+        #start-btn {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            letter-spacing: 2px;
+        }
+
+        #start-btn:hover {
+            background: white;
+            color: black;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+        }
+
+        /* Video de fondo */
+        .video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* Capa de contraste */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 2;
+        }
+
+        /* Contenedor principal */
+        .content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3;
+            padding: 20px;
+        }
+
+        /* --- ESTILOS DE LA FRASE INICIAL --- */
+        .text-container {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.5;
+            width: 100%;
+            max-width: 500px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.9);
+            user-select: none;
+            position: relative;
+            transition: opacity 1.5s ease;
+        }
+
+        .line {
+            display: block;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+
+        .circuit-letter {
+            display: inline-block;
+            color: white;
+            transition: color 0.15s ease, text-shadow 0.15s ease, transform 1.2s cubic-bezier(0.25, 1, 0.3, 1);
+        }
+
+        .circuit-letter.on {
+            color: #ff3333; 
+            text-shadow: 0 0 10px #ff3333, 0 0 20px #ff0000;
+        }
+
+        .filler-text {
+            display: inline-block;
+            opacity: 1;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .filler-text.hide {
+            opacity: 0;
+        }
+
+        /* Contenedor destino para ordenar el "te amo mucho" */
+        .target-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 1.5vw;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            justify-content: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .target-slot {
+            font-size: 2.2rem;
+            font-weight: 900;
+            flex: 1;
+            text-align: center;
+        }
+
+        /* --- ESTILOS DEL POEMA EN SECUENCIA --- */
+        #poem-container {
+            position: absolute;
+            width: 90%;
+            max-width: 550px;
+            text-align: center;
+            color: white;
+            opacity: 0;
+            z-index: 4;
+            transition: opacity 2s ease;
+            pointer-events: none;
+        }
+
+        .poem-verse {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            font-weight: 400;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
+            display: none;
+        }
+
+        .poem-verse.active {
+            display: block;
+        }
+
+        .poem-verse.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- ESTILOS DEL POEMA COMPLETO --- */
+        #full-poem {
+            position: absolute;
+            width: 90%;
+            max-width: 550px;
+            text-align: center;
+            color: white;
+            opacity: 0;
+            z-index: 5;
+            transition: opacity 2.5s ease-in-out;
+            pointer-events: none;
+            display: none;
+        }
+
+        #full-poem.active {
+            display: block;
+        }
+
+        #full-poem.show {
+            opacity: 1;
+        }
+
+        .full-verse {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            font-weight: 400;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        /* --- ESTILOS DE LA DEDICATORIA FINAL --- */
+        #final-message {
+            position: absolute;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            color: white;
+            opacity: 0;
+            z-index: 6;
+            transition: opacity 2.5s ease-in-out;
+            pointer-events: none;
+            display: none;
+        }
+
+        #final-message.active {
+            display: block;
+        }
+
+        #final-message.show {
+            opacity: 1;
+        }
+
+        .message-content {
+            font-size: 1.45rem;
+            line-height: 1.8;
+            font-weight: 700;
+            text-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3), 2px 2px 10px rgba(0, 0, 0, 0.9);
+            letter-spacing: 0.5px;
+        }
+
+        /* Animación para el titileo final de la frase */
+        @keyframes fast-blink {
+            0%, 100% { 
+                color: #ff3333; 
+                text-shadow: 0 0 15px #ff3333, 0 0 30px #ff0000;
+            }
+            50% { 
+                color: rgba(255, 255, 255, 0.1);
+                text-shadow: none;
+            }
+        }
+
+        .blink-group {
+            animation: fast-blink 0.6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <button id="start-btn">EMPEZAR</button>
+    </div>
+
+    <video id="my-video" class="video-bg" loop muted playsinline>
+        <source src="fondo.mp4" type="video/mp4">
+    </video>
+
+    <audio id="my-audio" loop>
+        <source src="musica.mp3" type="audio/mp3">
+    </audio>
+
+    <div class="overlay"></div>
+
+    <div class="content">
+        <div class="text-container" id="phrase-container">
+            <span class="line">
+                <span class="filler-text">Incl</span><span class="circuit-letter" id="letra-u">u</span><span class="filler-text">so una</span>
+            </span>
+            <span class="line">
+                <span class="filler-text">p</span><span class="circuit-letter" id="letra-e">e</span><span class="filler-text">queñ</span><span class="circuit-letter" id="letra-a">a</span> 
+                <span class="circuit-letter" id="letra-c">c</span><span class="filler-text">onversación</span>
+            </span>
+            <span class="line">
+                <span class="filler-text">con</span><span class="circuit-letter" id="letra-t">t</span><span class="filler-text">ig</span><span class="circuit-letter" id="letra-o1">o</span> 
+                <span class="circuit-letter" id="letra-m1">m</span><span class="filler-text">e </span><span class="circuit-letter" id="letra-h">h</span><span class="filler-text">ace</span>
+            </span>
+            <span class="line">
+                <span class="circuit-letter" id="letra-m2">m</span><span class="filler-text">ej</span><span class="circuit-letter" id="letra-o2">o</span><span class="filler-text">r el día</span>
+            </span>
+        </div>
+
+        <div class="target-container">
+            <div class="target-slot" id="target-t"></div>
+            <div class="target-slot" id="target-e"></div>
+            <div class="target-slot" id="target-a"></div>
+            <div class="target-slot" id="target-m1"></div>
+            <div class="target-slot" id="target-o1"></div>
+            <div style="width: 15px;"></div> 
+            <div class="target-slot" id="target-m2"></div>
+            <div class="target-slot" id="target-u"></div>
+            <div class="target-slot" id="target-c"></div>
+            <div class="target-slot" id="target-h"></div>
+            <div class="target-slot" id="target-o2"></div>
+        </div>
+
+        <div id="poem-container">
+            <div class="poem-verse" id="verso-1">"Mi táctica es mirarte,<br>aprender cómo sos,<br>quererte como sos."</div>
+            <div class="poem-verse" id="verso-2">"Mi táctica es hablarte<br>y escucharte,<br>construir con palabras<br>un puente indestructible."</div>
+            <div class="poem-verse" id="verso-3">"Mi estrategia es que un día cualquiera,<br>no sé cómo ni sé con qué pretexto,<br>por fin me necesites."</div>
+        </div>
+
+        <div id="full-poem">
+            <div class="full-verse">"Mi táctica es mirarte,<br>aprender cómo sos,<br>quererte como sos."</div>
+            <div class="full-verse">"Mi táctica es hablarte<br>y escucharte,<br>construir con palabras<br>un puente indestructible."</div>
+            <div class="full-verse">"Mi estrategia es que un día cualquiera,<br>no sé cómo ni sé con qué pretexto,<br>por fin me necesites."</div>
+        </div>
+
+        <div id="final-message">
+            <div class="message-content">
+                Te amo tanto Karla que haría miles de poemas o te dedicaría miles de poemas por siempre, por eso te quiero y te amo mucho mucho amor, de aquí hasta los más remotos lugares del universo.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mapeo ordenado para formar el mensaje secreto
+        const circuitOrder = [
+            'letra-t', 'letra-e', 'letra-a', 'letra-m1', 'letra-o1',
+            'letra-m2', 'letra-u', 'letra-c', 'letra-h', 'letra-o2'
+        ];
+
+        // Destinos correspondientes
+        const targets = [
+            'target-t', 'target-e', 'target-a', 'target-m1', 'target-o1',
+            'target-m2', 'target-u', 'target-c', 'target-h', 'target-o2'
+        ];
+
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function runExperience() {
+            const fillers = document.querySelectorAll('.filler-text');
+            const phraseContainer = document.getElementById('phrase-container');
+            const poemContainer = document.getElementById('poem-container');
+            const fullPoem = document.getElementById('full-poem');
+            const finalMessage = document.getElementById('final-message');
+
+            // --- FASE 1: Recorrido de encendido uno a uno ---
+            for (let i = 0; i < circuitOrder.length; i++) {
+                const currentId = circuitOrder[i];
+                const letter = document.getElementById(currentId);
+                if (letter) {
+                    letter.classList.add('on');
+                }
+                await wait(900);
+                if (letter) {
+                    letter.classList.remove('on');
+                }
+            }
+
+            await wait(200);
+
+            // --- FASE 2: Desvanecer el texto de relleno ---
+            fillers.forEach(el => el.classList.add('hide'));
+            await wait(600); 
+
+            // --- FASE 3: Volar y ordenar las letras en el centro ---
+            for (let i = 0; i < circuitOrder.length; i++) {
+                const letter = document.getElementById(circuitOrder[i]);
+                const target = document.getElementById(targets[i]);
+                
+                if (letter && target) {
+                    const rectLetter = letter.getBoundingClientRect();
+                    const rectTarget = target.getBoundingClientRect();
+
+                    const deltaX = rectTarget.left - rectLetter.left + (rectTarget.width - rectLetter.width) / 2;
+                    const deltaY = rectTarget.top - rectLetter.top + (rectTarget.height - rectLetter.height) / 2;
+
+                    letter.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.1)`;
+                    letter.classList.add('on');
+                }
+            }
+
+            await wait(1200);
+
+            // --- FASE 4: Titileo grupal ---
+            circuitOrder.forEach(id => {
+                const letter = document.getElementById(id);
+                if (letter) {
+                    letter.classList.add('blink-group');
+                }
+            });
+
+            await wait(5000); // 5 segundos de brillo
+
+            // --- FASE 5: Desvanecer la primera pantalla ---
+            phraseContainer.style.opacity = '0';
+            circuitOrder.forEach(id => {
+                const letter = document.getElementById(id);
+                if (letter) {
+                    letter.classList.remove('blink-group');
+                }
+            });
+
+            await wait(2000); 
+
+            // --- FASE 6: Secuencia por versos individuales ---
+            poemContainer.style.opacity = '1';
+
+            // Verso 1
+            const v1 = document.getElementById('verso-1');
+            v1.classList.add('active');
+            await wait(50);
+            v1.classList.add('show');
+            await wait(4500);
+
+            v1.classList.remove('show');
+            await wait(800);
+            v1.classList.remove('active');
+
+            // Verso 2
+            const v2 = document.getElementById('verso-2');
+            v2.classList.add('active');
+            await wait(50);
+            v2.classList.add('show');
+            await wait(5500);
+
+            v2.classList.remove('show');
+            await wait(800);
+            v2.classList.remove('active');
+
+            // Verso 3
+            const v3 = document.getElementById('verso-3');
+            v3.classList.add('active');
+            await wait(50);
+            v3.classList.add('show');
+            await wait(4500);
+
+            v3.classList.remove('show');
+            await wait(800);
+            v3.classList.remove('active');
+
+            // Desvanecer contenedor individual
+            poemContainer.style.opacity = '0';
+            await wait(1500);
+
+            // --- FASE 7: Revelación del poema completo ---
+            fullPoem.classList.add('active');
+            await wait(50);
+            fullPoem.classList.add('show');
+            
+            await wait(8000); // Tiempo generoso de lectura para el poema completo (8s)
+
+            // Desvanecer el poema completo para dar paso a la dedicatoria
+            fullPoem.classList.remove('show');
+            await wait(2000); // Transición suave de 2 segundos en oscuridad
+            fullPoem.classList.remove('active');
+
+            // --- FASE 8: Mensaje final y personalizado para Karla ---
+            finalMessage.classList.add('active');
+            await wait(50);
+            finalMessage.classList.add('show');
+
+            // El mensaje se queda fijo permanentemente al final de la experiencia
+        }
+
+        // Evento botón
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const video = document.getElementById('my-video');
+            const audio = document.getElementById('my-audio');
+
+            welcomeScreen.style.opacity = '0';
+            welcomeScreen.style.visibility = 'hidden';
+
+            video.play();
+            audio.play();
+
+            setTimeout(runExperience, 1500);
+        });
+    </script>
+</body>
+</html>
